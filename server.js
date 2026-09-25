@@ -6,6 +6,9 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
+const express = require('express');
+const app = express();
+
 const DURS = [1, 3, 5, 10];
 const PAGE = fs.readFileSync(path.join(__dirname, 'public', 'index.html'));
 const WS_MAGIC = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
