@@ -49,20 +49,12 @@ const server = http.createServer((req, res) => {
   res.writeHead(404); res.end('Not found');
 });
 
-server.on('upgrade', (req, socket) => {
-  const m = (req.url || '').match(/^\/ws\/([A-Za-z0-9]{4})$/);
-  const key = req.headers['sec-websocket-key'];
-  if (!m || !key || (req.headers.upgrade || '').toLowerCase() !== 'websocket') { socket.destroy(); return; }
-  const accept = crypto.createHash('sha1').update(key + WS_MAGIC).digest('base64');
-  socket.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ' + accept + '\r\n\r\n');
-  socket.ws = { send: (str) => { try { socket.write(encodeFrame(str)); } catch (e) {} } };
-  let buf = Buffer.alloc(0);
-  socket.on('data', (chunk) => {
-    buf = Buffer.concat([buf, chunk]);
-    buf = decodeFrames(buf, (msg) => { if (msg === null) socket.end(); else onMessage(socket, m[1].toUpperCase(), msg); });
-  });
-  socket.on('error', () => onClose(socket, m[1].toUpperCase()));
-  socket.on('close', () => onClose(socket, m[1].toUpperCase()));
+const { WebSocketServer } = require('ws');
+const wss = new WebSocketServer({ server });
+wss.on('connection', (ws, req) => {
+  console.log('Client connected');
+  ws.on('message', (message) => { });
+  ws.on('close', () => { });
 });
 
 function json(room) {
